@@ -5,13 +5,23 @@ import {
 
 function Charts({ transactions }) {
 
-  // Line data
-  const lineData = transactions.map(t => ({
-    date: t.date,
-    amount: t.amount
-  }));
+  // ✅ Correct Balance Trend (running balance)
+  let balance = 0;
 
-  // Pie data
+  const lineData = transactions.map(t => {
+    if (t.type === "income") {
+      balance += t.amount;
+    } else {
+      balance -= t.amount;
+    }
+
+    return {
+      date: t.date,
+      balance: balance
+    };
+  });
+
+  // ✅ Pie data (expense breakdown)
   const categoryMap = {};
   transactions.forEach(t => {
     if (t.type === "expense") {
@@ -29,22 +39,35 @@ function Charts({ transactions }) {
   return (
     <div className="grid md:grid-cols-2 gap-6">
 
-      {/* Line Chart */}
-      <div className="bg-gray-900 p-4 rounded-xl">
-        <h3 className="mb-2">Balance Trend</h3>
+      {/* 📈 Line Chart */}
+      <div className="bg-gray-900 p-5 rounded-2xl shadow-lg">
+        <h3 className="mb-4 text-center text-gray-300 font-medium">
+          Balance Trend
+        </h3>
+
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={lineData}>
-            <XAxis dataKey="date" />
-            <YAxis />
+            <XAxis dataKey="date" stroke="#ccc" />
+            <YAxis stroke="#ccc" />
             <Tooltip />
-            <Line type="monotone" dataKey="amount" stroke="#60a5fa" />
+
+            <Line
+              type="monotone"
+              dataKey="balance"   // ✅ FIXED
+              stroke="#60a5fa"
+              strokeWidth={2}
+              dot={{ r: 4 }}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Pie Chart */}
+      {/* 🥧 Pie Chart */}
       <div className="bg-gray-900 p-5 rounded-2xl shadow-lg">
-        <h3 className="mb-4 text-center text-gray-300 font-medium">Spending Breakdown</h3>
+        <h3 className="mb-4 text-center text-gray-300 font-medium">
+          Spending Breakdown
+        </h3>
+
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie data={pieData} dataKey="value" outerRadius={80}>
